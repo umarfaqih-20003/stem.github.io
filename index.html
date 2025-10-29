@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kuis STEM Interaktif</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 700px;
+            width: 100%;
+            padding: 40px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            color: #667eea;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 1.1em;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            border-radius: 15px;
+            color: white;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-label {
+            font-size: 0.9em;
+            opacity: 0.9;
+            margin-bottom: 5px;
+        }
+
+        .stat-value {
+            font-size: 1.8em;
+            font-weight: bold;
+        }
+
+        .hearts {
+            font-size: 1.5em;
+        }
+
+        .quiz-section {
+            display: none;
+        }
+
+        .quiz-section.active {
+            display: block;
+        }
+
+        .category-badge {
+            display: inline-block;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .science { background: #4facfe; color: white; }
+        .technology { background: #43e97b; color: white; }
+        .engineering { background: #fa709a; color: white; }
+        .mathematics { background: #feca57; color: white; }
+
+        .question {
+            font-size: 1.3em;
+            color: #333;
+            margin-bottom: 25px;
+            line-height: 1.6;
+        }
+
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .option {
+            padding: 18px 25px;
+            border: 3px solid #e0e0e0;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1.1em;
+            background: white;
+        }
+
+        .option:hover {
+            border-color: #667eea;
+            background: #f8f9ff;
+            transform: translateX(5px);
+        }
+
+        .option.correct {
+            border-color: #4caf50;
+            background: #e8f5e9;
+            animation: correctPulse 0.5s ease;
+        }
+
+        .option.wrong {
+            border-color: #f44336;
+            background: #ffebee;
+            animation: wrongShake 0.5s ease;
+        }
+
+        @keyframes correctPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        @keyframes wrongShake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        .start-screen, .end-screen {
+            text-align: center;
+        }
+
+        .start-screen h2 {
+            color: #667eea;
+            font-size: 2em;
+            margin-bottom: 20px;
+        }
+
+        .start-screen ul {
+            text-align: left;
+            margin: 20px auto;
+            max-width: 400px;
+            line-height: 2;
+        }
+
+        .start-screen li {
+            color: #555;
+            font-size: 1.1em;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.2em;
+            border-radius: 30px;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .end-screen h2 {
+            font-size: 2.5em;
+            margin-bottom: 20px;
+        }
+
+        .end-screen.success h2 {
+            color: #4caf50;
+        }
+
+        .end-screen.fail h2 {
+            color: #f44336;
+        }
+
+        .final-score {
+            font-size: 3em;
+            font-weight: bold;
+            color: #667eea;
+            margin: 20px 0;
+        }
+
+        .end-message {
+            font-size: 1.2em;
+            color: #666;
+            margin-bottom: 30px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 Kuis STEM</h1>
+            <p>Science • Technology • Engineering • Mathematics</p>
+        </div>
+
+        <div id="startScreen" class="start-screen active">
+            <h2>Selamat Datang!</h2>
+            <ul>
+                <li>✨ 8 soal pilihan ganda</li>
+                <li>❤️ 3 nyawa tersedia</li>
+                <li>🎯 Jawab dengan benar untuk mendapat skor</li>
+                <li>⚠️ Salah jawab = nyawa berkurang</li>
+            </ul>
+            <button class="btn" onclick="startQuiz()">Mulai Kuis</button>
+        </div>
+
+        <div id="quizScreen" class="quiz-section">
+            <div class="stats">
+                <div class="stat-item">
+                    <div class="stat-label">Skor</div>
+                    <div class="stat-value" id="score">0</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Soal</div>
+                    <div class="stat-value"><span id="currentQ">1</span>/8</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Nyawa</div>
+                    <div class="hearts" id="lives">❤️❤️❤️</div>
+                </div>
+            </div>
+
+            <div id="questionContainer">
+                <span id="categoryBadge" class="category-badge"></span>
+                <div class="question" id="question"></div>
+                <div class="options" id="options"></div>
+            </div>
+        </div>
+
+        <div id="endScreen" class="end-screen quiz-section">
+            <h2 id="endTitle"></h2>
+            <div class="final-score" id="finalScore"></div>
+            <p class="end-message" id="endMessage"></p>
+            <button class="btn" onclick="restartQuiz()">Main Lagi</button>
+        </div>
+    </div>
+
+    <script>
+        const questions = [
+            // Science
+            {
+                category: 'Science',
+                question: 'Apa gas yang paling banyak di atmosfer Bumi?',
+                options: ['Oksigen', 'Nitrogen', 'Karbon Dioksida', 'Hidrogen'],
+                correct: 1
+            },
+            {
+                category: 'Science',
+                question: 'Berapa jumlah tulang pada tubuh manusia dewasa?',
+                options: ['196', '206', '216', '226'],
+                correct: 1
+            },
+            // Technology
+            {
+                category: 'Technology',
+                question: 'Siapa yang dianggap sebagai bapak komputer?',
+                options: ['Bill Gates', 'Steve Jobs', 'Charles Babbage', 'Alan Turing'],
+                correct: 2
+            },
+            {
+                category: 'Technology',
+                question: 'Apa kepanjangan dari CPU?',
+                options: ['Central Processing Unit', 'Computer Personal Unit', 'Central Program Utility', 'Computer Processing Unit'],
+                correct: 0
+            },
+            // Engineering
+            {
+                category: 'Engineering',
+                question: 'Jembatan Golden Gate terletak di kota mana?',
+                options: ['New York', 'Los Angeles', 'San Francisco', 'Seattle'],
+                correct: 2
+            },
+            {
+                category: 'Engineering',
+                question: 'Material apa yang paling kuat untuk konstruksi bangunan?',
+                options: ['Kayu', 'Beton', 'Baja', 'Plastik'],
+                correct: 2
+            },
+            // Mathematics
+            {
+                category: 'Mathematics',
+                question: 'Berapa nilai dari π (pi) yang dibulatkan 2 desimal?',
+                options: ['3.12', '3.14', '3.16', '3.18'],
+                correct: 1
+            },
+            {
+                category: 'Mathematics',
+                question: 'Apa hasil dari 7² (7 pangkat 2)?',
+                options: ['14', '49', '42', '56'],
+                correct: 1
+            }
+        ];
+
+        let currentQuestion = 0;
+        let score = 0;
+        let lives = 3;
+        let answered = false;
+
+        function startQuiz() {
+            document.getElementById('startScreen').classList.remove('active');
+            document.getElementById('quizScreen').classList.add('active');
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            if (currentQuestion >= questions.length) {
+                endQuiz(true);
+                return;
+            }
+
+            answered = false;
+            const q = questions[currentQuestion];
+            
+            document.getElementById('currentQ').textContent = currentQuestion + 1;
+            document.getElementById('categoryBadge').textContent = q.category;
+            document.getElementById('categoryBadge').className = 'category-badge ' + q.category.toLowerCase();
+            document.getElementById('question').textContent = q.question;
+
+            const optionsContainer = document.getElementById('options');
+            optionsContainer.innerHTML = '';
+
+            q.options.forEach((option, index) => {
+                const optionDiv = document.createElement('div');
+                optionDiv.className = 'option';
+                optionDiv.textContent = option;
+                optionDiv.onclick = () => checkAnswer(index);
+                optionsContainer.appendChild(optionDiv);
+            });
+        }
+
+        function checkAnswer(selected) {
+            if (answered) return;
+            answered = true;
+
+            const q = questions[currentQuestion];
+            const options = document.querySelectorAll('.option');
+
+            if (selected === q.correct) {
+                options[selected].classList.add('correct');
+                score++;
+                document.getElementById('score').textContent = score;
+                setTimeout(() => {
+                    currentQuestion++;
+                    loadQuestion();
+                }, 1000);
+            } else {
+                options[selected].classList.add('wrong');
+                options[q.correct].classList.add('correct');
+                lives--;
+                updateLives();
+                
+                if (lives === 0) {
+                    setTimeout(() => endQuiz(false), 1500);
+                } else {
+                    setTimeout(() => {
+                        currentQuestion++;
+                        loadQuestion();
+                    }, 1500);
+                }
+            }
+        }
+
+        function updateLives() {
+            const hearts = ['❤️❤️❤️', '❤️❤️', '❤️', ''];
+            document.getElementById('lives').textContent = hearts[3 - lives];
+        }
+
+        function endQuiz(completed) {
+            document.getElementById('quizScreen').classList.remove('active');
+            document.getElementById('endScreen').classList.add('active');
+            
+            const endScreen = document.getElementById('endScreen');
+            const endTitle = document.getElementById('endTitle');
+            const endMessage = document.getElementById('endMessage');
+            
+            document.getElementById('finalScore').textContent = score + '/8';
+
+            if (completed && lives > 0) {
+                endScreen.className = 'end-screen quiz-section active success';
+                endTitle.textContent = '🎉 Selamat!';
+                if (score === 8) {
+                    endMessage.textContent = 'Sempurna! Kamu menguasai STEM dengan luar biasa!';
+                } else if (score >= 6) {
+                    endMessage.textContent = 'Hebat! Pengetahuan STEM kamu sangat bagus!';
+                } else {
+                    endMessage.textContent = 'Bagus! Terus belajar untuk hasil yang lebih baik!';
+                }
+            } else {
+                endScreen.className = 'end-screen quiz-section active fail';
+                endTitle.textContent = '😢 Try Again';
+                endMessage.textContent = 'Jangan menyerah! Coba lagi untuk hasil yang lebih baik!';
+            }
+        }
+
+        function restartQuiz() {
+            currentQuestion = 0;
+            score = 0;
+            lives = 3;
+            document.getElementById('score').textContent = '0';
+            updateLives();
+            document.getElementById('endScreen').classList.remove('active');
+            document.getElementById('startScreen').classList.add('active');
+        }
+    </script>
+</body>
+</html>
