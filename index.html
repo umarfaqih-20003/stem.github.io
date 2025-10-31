@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kuis STEM Interaktif</title>
+    <title>Kuis STEM (Science, Technology, Engineering, and Mathematics)</title>
     <style>
         * {
             margin: 0;
@@ -13,7 +13,8 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background-image: url('background.png'); /* <-- PERBAIKAN 1 */
+            background-size: cover;
             min-height: 100vh;
             display: flex;
             justify-content: center;
@@ -22,7 +23,7 @@
         }
 
         .container {
-            background: white;
+            background: rgba(255, 255, 255, 0.768);
             border-radius: 20px;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
             max-width: 700px;
@@ -75,12 +76,24 @@
             font-size: 1.5em;
         }
 
-        .quiz-section {
+        .screen {
             display: none;
         }
 
-        .quiz-section.active {
+        .screen.active {
             display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .category-badge {
@@ -138,6 +151,11 @@
             animation: wrongShake 0.5s ease;
         }
 
+        .option.disabled {
+            pointer-events: none;
+            opacity: 0.6;
+        }
+
         @keyframes correctPulse {
             0%, 100% { transform: scale(1); }
             50% { transform: scale(1.05); }
@@ -189,6 +207,15 @@
             box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
         }
 
+        .btn-next {
+            display: none;
+            margin-top: 30px;
+        }
+
+        .btn-next.show {
+            display: inline-block;
+        }
+
         .end-screen h2 {
             font-size: 2.5em;
             margin-bottom: 20px;
@@ -214,50 +241,52 @@
             color: #666;
             margin-bottom: 30px;
         }
+
+        .feedback {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 1.1em;
+            font-weight: bold;
+            display: none;
+        }
+
+        .feedback.show {
+            display: block;
+        }
+
+        .feedback.correct-feedback {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .feedback.wrong-feedback {
+            background: #ffebee;
+            color: #c62828;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>🚀 Kuis STEM</h1>
+            <h1>🚀 Kuis STEM 🚀</h1>
             <p>Science • Technology • Engineering • Mathematics</p>
         </div>
 
-        <div id="startScreen" class="start-screen active">
+        <div id="startScreen" class="screen active start-screen">
             <h2>Selamat Datang!</h2>
             <ul>
                 <li>✨ 8 soal pilihan ganda</li>
-                <li>❤️ 3 nyawa tersedia</li>
+                <li>💙 3 nyawa tersedia</li>
                 <li>🎯 Jawab dengan benar untuk mendapat skor</li>
                 <li>⚠️ Salah jawab = nyawa berkurang</li>
             </ul>
             <button class="btn" onclick="startQuiz()">Mulai Kuis</button>
         </div>
 
-        <div id="quizScreen" class="quiz-section">
-            <div class="stats">
-                <div class="stat-item">
-                    <div class="stat-label">Skor</div>
-                    <div class="stat-value" id="score">0</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-label">Soal</div>
-                    <div class="stat-value"><span id="currentQ">1</span>/8</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-label">Nyawa</div>
-                    <div class="hearts" id="lives">❤️❤️❤️</div>
-                </div>
-            </div>
+        <div id="questionScreens"></div>
 
-            <div id="questionContainer">
-                <span id="categoryBadge" class="category-badge"></span>
-                <div class="question" id="question"></div>
-                <div class="options" id="options"></div>
-            </div>
-        </div>
-
-        <div id="endScreen" class="end-screen quiz-section">
+        <div id="endScreen" class="screen end-screen">
             <h2 id="endTitle"></h2>
             <div class="final-score" id="finalScore"></div>
             <p class="end-message" id="endMessage"></p>
@@ -270,143 +299,195 @@
             // Science
             {
                 category: 'Science',
-                question: 'Apa gas yang paling banyak di atmosfer Bumi?',
-                options: ['Oksigen', 'Nitrogen', 'Karbon Dioksida', 'Hidrogen'],
-                correct: 1
+                question: 'Bagian tumbuhan yang berguna sebagai penopang dan penyimpan cadangan makanan adalah',
+                options: ['Akar', 'Buah', 'Daun', 'Batang'],
+                correct: 3
             },
             {
                 category: 'Science',
-                question: 'Berapa jumlah tulang pada tubuh manusia dewasa?',
-                options: ['196', '206', '216', '226'],
-                correct: 1
+                image: 'science.jpg',
+                question: 'Fenomena tersebut terjadi karena...',
+                options: ['Pembiasan', 'Evaporasi', 'Kondensasi', 'Pelapukan'],
+                correct: 0
             },
             // Technology
             {
                 category: 'Technology',
-                question: 'Siapa yang dianggap sebagai bapak komputer?',
-                options: ['Bill Gates', 'Steve Jobs', 'Charles Babbage', 'Alan Turing'],
-                correct: 2
+                question: 'Ketika kamu menggunakan sepeda ke sekolah, kamu sedang memakai teknologi di bidang apa?',
+                options: ['Energi', 'Transportasi', 'Rumah tangga', 'Komunikasi'],
+                correct: 1
             },
             {
                 category: 'Technology',
-                question: 'Apa kepanjangan dari CPU?',
-                options: ['Central Processing Unit', 'Computer Personal Unit', 'Central Program Utility', 'Computer Processing Unit'],
+                question: 'Apa yang tidak bisa dilakukan oleh teknologi tersebut?',
+                image: 'technology.jpg',
+                options: ['Membangun rumah', 'Memesan ojek', 'Membeli makanan', 'Membeli pakaian'],
                 correct: 0
             },
             // Engineering
             {
                 category: 'Engineering',
-                question: 'Jembatan Golden Gate terletak di kota mana?',
-                options: ['New York', 'Los Angeles', 'San Francisco', 'Seattle'],
-                correct: 2
+                question: 'Alat-alat di bawah ini yang merupakan bidang engineering kecuali...',
+                options: ['HP', 'Jembatan', 'Alat penyaring air', 'Robot pembersih debu'],
+                correct: 0
             },
             {
                 category: 'Engineering',
-                question: 'Material apa yang paling kuat untuk konstruksi bangunan?',
-                options: ['Kayu', 'Beton', 'Baja', 'Plastik'],
-                correct: 2
+                question: 'Apa langkah pertama untuk membuat produk engineering tersebut?',
+                image: 'engineering.jpg',
+                options: ['Menyiapkan alat dan bahan', 'Membuat rancangan berupa gambar', 'Mencari pekerja', 'Merencanakan peresmian'],
+                correct: 1
             },
             // Mathematics
             {
                 category: 'Mathematics',
-                question: 'Berapa nilai dari π (pi) yang dibulatkan 2 desimal?',
-                options: ['3.12', '3.14', '3.16', '3.18'],
-                correct: 1
+                question: 'Robot pemetik buah dapat mengambil 8 apel setiap 2 menit. Jika bekerja selama 6 menit, berapa apel yang diambil robot itu?',
+                options: ['12 Apel', '16 Apel', '20 Apel', '24 Apel'],
+                correct: 3
             },
             {
                 category: 'Mathematics',
-                question: 'Apa hasil dari 7² (7 pangkat 2)?',
-                options: ['14', '49', '42', '56'],
-                correct: 1
+                question: 'Termasuk kedalam bidang apakah gambar diatas?',
+                image: 'mathematics.jpg',
+                options: ['Science (ilmu alam)', 'Technology (teknologi)', 'Engineering (teknik)', 'Mathematics (matematika)'],
+                correct: 3
             }
         ];
 
         let currentQuestion = 0;
         let score = 0;
         let lives = 3;
-        let answered = false;
 
         function startQuiz() {
+            currentQuestion = 0;
+            score = 0;
+            lives = 3;
+            generateQuestionScreens();
             document.getElementById('startScreen').classList.remove('active');
-            document.getElementById('quizScreen').classList.add('active');
-            loadQuestion();
+            showQuestion(0);
         }
 
-        function loadQuestion() {
-            if (currentQuestion >= questions.length) {
-                endQuiz(true);
-                return;
-            }
+        function generateQuestionScreens() {
+            const container = document.getElementById('questionScreens');
+            container.innerHTML = '';
 
-            answered = false;
-            const q = questions[currentQuestion];
-            
-            document.getElementById('currentQ').textContent = currentQuestion + 1;
-            document.getElementById('categoryBadge').textContent = q.category;
-            document.getElementById('categoryBadge').className = 'category-badge ' + q.category.toLowerCase();
-            document.getElementById('question').textContent = q.question;
+            questions.forEach((q, index) => {
+                const screenDiv = document.createElement('div');
+                screenDiv.id = `question${index}`;
+                screenDiv.className = 'screen';
+                
+                // PERBAIKAN 2, Bagian 1: Membuat variabel untuk tag gambar jika ada
+                const imageHtml = q.image 
+                    ? `<img src="${q.image}" alt="Gambar Soal ${q.category}" style="width: 100%; max-width: 400px; border-radius: 10px; margin: 0 auto 20px; display: block;">` 
+                    : '';
 
-            const optionsContainer = document.getElementById('options');
-            optionsContainer.innerHTML = '';
-
-            q.options.forEach((option, index) => {
-                const optionDiv = document.createElement('div');
-                optionDiv.className = 'option';
-                optionDiv.textContent = option;
-                optionDiv.onclick = () => checkAnswer(index);
-                optionsContainer.appendChild(optionDiv);
+                // PERBAIKAN 2, Bagian 2: Menambahkan variabel imageHtml ke dalam innerHTML
+                screenDiv.innerHTML = `
+                    <div class="stats">
+                        <div class="stat-item">
+                            <div class="stat-label">Skor</div>
+                            <div class="stat-value" id="score${index}">${score}</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label">Soal</div>
+                            <div class="stat-value">${index + 1}/8</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label">Nyawa</div>
+                            <div class="hearts" id="lives${index}">💙💙💙</div>
+                        </div>
+                    </div>
+                    <span class="category-badge ${q.category.toLowerCase()}">${q.category}</span>
+                    ${imageHtml} 
+                    <div class="question">${q.question}</div>
+                    <div class="options" id="options${index}">
+                        ${q.options.map((opt, i) => `
+                            <div class="option" onclick="checkAnswer(${index}, ${i})">${opt}</div>
+                        `).join('')}
+                    </div>
+                    <div class="feedback" id="feedback${index}"></div>
+                    <button class="btn btn-next" id="nextBtn${index}" onclick="nextQuestion(${index})">
+                        ${index === questions.length - 1 ? 'Lihat Hasil' : 'Soal Berikutnya'}
+                    </button>
+                `;
+                
+                container.appendChild(screenDiv);
             });
         }
 
-        function checkAnswer(selected) {
-            if (answered) return;
-            answered = true;
+        function showQuestion(index) {
+            const screens = document.querySelectorAll('.screen');
+            screens.forEach(screen => screen.classList.remove('active'));
+            document.getElementById(`question${index}`).classList.add('active');
+            
+            // Update stats
+            document.getElementById(`score${index}`).textContent = score;
+            updateLivesDisplay(index);
+        }
 
-            const q = questions[currentQuestion];
-            const options = document.querySelectorAll('.option');
+        function checkAnswer(questionIndex, selectedIndex) {
+            const q = questions[questionIndex];
+            const optionsContainer = document.getElementById(`options${questionIndex}`);
+            const options = optionsContainer.querySelectorAll('.option');
+            const feedback = document.getElementById(`feedback${questionIndex}`);
+            const nextBtn = document.getElementById(`nextBtn${questionIndex}`);
 
-            if (selected === q.correct) {
-                options[selected].classList.add('correct');
+            // Disable all options
+            options.forEach(opt => opt.classList.add('disabled'));
+
+            if (selectedIndex === q.correct) {
+                options[selectedIndex].classList.add('correct');
                 score++;
-                document.getElementById('score').textContent = score;
-                setTimeout(() => {
-                    currentQuestion++;
-                    loadQuestion();
-                }, 1000);
+                document.getElementById(`score${questionIndex}`).textContent = score;
+                feedback.textContent = '✅ Benar! Jawaban kamu tepat!';
+                feedback.className = 'feedback correct-feedback show';
             } else {
-                options[selected].classList.add('wrong');
+                options[selectedIndex].classList.add('wrong');
                 options[q.correct].classList.add('correct');
                 lives--;
-                updateLives();
+                updateLivesDisplay(questionIndex);
+                feedback.textContent = '❌ Salah! Jawaban yang benar ditandai dengan warna hijau.';
+                feedback.className = 'feedback wrong-feedback show';
                 
                 if (lives === 0) {
-                    setTimeout(() => endQuiz(false), 1500);
-                } else {
-                    setTimeout(() => {
-                        currentQuestion++;
-                        loadQuestion();
-                    }, 1500);
+                    setTimeout(() => endQuiz(false), 2000);
+                    return;
                 }
+            }
+
+            nextBtn.classList.add('show');
+        }
+
+        function nextQuestion(currentIndex) {
+            if (currentIndex === questions.length - 1) {
+                endQuiz(true);
+            } else {
+                showQuestion(currentIndex + 1);
             }
         }
 
-        function updateLives() {
-            const hearts = ['❤️❤️❤️', '❤️❤️', '❤️', ''];
-            document.getElementById('lives').textContent = hearts[3 - lives];
+        function updateLivesDisplay(questionIndex) {
+            const hearts = ['💙💙💙', '💙💙', '💙', ''];
+            const livesElement = document.getElementById(`lives${questionIndex}`);
+            if (livesElement) {
+                livesElement.textContent = hearts[3 - lives];
+            }
         }
 
         function endQuiz(completed) {
-            document.getElementById('quizScreen').classList.remove('active');
-            document.getElementById('endScreen').classList.add('active');
+            const screens = document.querySelectorAll('.screen');
+            screens.forEach(screen => screen.classList.remove('active'));
             
             const endScreen = document.getElementById('endScreen');
+            endScreen.classList.add('active');
+            
             const endTitle = document.getElementById('endTitle');
             const endMessage = document.getElementById('endMessage');
             
             document.getElementById('finalScore').textContent = score + '/8';
 
             if (completed && lives > 0) {
-                endScreen.className = 'end-screen quiz-section active success';
+                endScreen.className = 'screen active end-screen success';
                 endTitle.textContent = '🎉 Selamat!';
                 if (score === 8) {
                     endMessage.textContent = 'Sempurna! Kamu menguasai STEM dengan luar biasa!';
@@ -416,18 +497,13 @@
                     endMessage.textContent = 'Bagus! Terus belajar untuk hasil yang lebih baik!';
                 }
             } else {
-                endScreen.className = 'end-screen quiz-section active fail';
-                endTitle.textContent = '😢 Try Again';
+                endScreen.className = 'screen active end-screen fail';
+                endTitle.textContent = '😢 Coba Lagi';
                 endMessage.textContent = 'Jangan menyerah! Coba lagi untuk hasil yang lebih baik!';
             }
         }
 
         function restartQuiz() {
-            currentQuestion = 0;
-            score = 0;
-            lives = 3;
-            document.getElementById('score').textContent = '0';
-            updateLives();
             document.getElementById('endScreen').classList.remove('active');
             document.getElementById('startScreen').classList.add('active');
         }
